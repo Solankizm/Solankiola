@@ -22,3 +22,5 @@ probe-report.txt
 
 # python venv for the probe tool
 .venv/
+
+speed-report.txt

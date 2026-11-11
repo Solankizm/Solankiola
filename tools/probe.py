@@ -41,6 +41,18 @@ PROBES = [
 ]
 
 
+SPEED_PROBES = [
+    ("VSM provider + authority", "dumpsys package com.olaelectric.vehiclestatemanager | grep -iE 'authorit|Provider' | head"),
+    ("VSM content query", "content query --uri content://com.olaelectric.vehiclestatemanager 2>&1 | head -40"),
+    ("VehicleStateManager service", "dumpsys activity service com.olaelectric.vehiclestatemanager 2>&1 | head -140"),
+    ("VehicleRangeService", "dumpsys activity service com.olaelectric.vehiclerangeservice 2>&1 | head -120"),
+    ("DataAggregator service", "dumpsys activity service com.olaelectric.dataaggregator 2>&1 | head -80"),
+    ("settings speed/soc", "settings list system 2>/dev/null | grep -iE 'speed|soc|rpm'; settings list global 2>/dev/null | grep -iE 'speed|soc'"),
+    ("getprop speed/soc", "getprop | grep -iE 'speed|rpm|soc' | head"),
+    ("HMI prefs speed", "cat /data/data/com.olaelectric.hmiclient/shared_prefs/*.xml 2>/dev/null | grep -iE 'speed|soc|rpm' | head -40"),
+]
+
+
 def _vi(n):
     out = bytearray()
     while True:
@@ -91,6 +103,7 @@ def main():
         description="Read-only probe of an Ola S1 head unit (MoveOS port 50005).")
     ap.add_argument("--host", help="scooter IP, e.g. 192.168.43.12  (same one the app's Scan finds)")
     ap.add_argument("--ipv6", help="IPv6 link-local form, e.g. fe80::1%%6  (use --host for normal IPv4)")
+    ap.add_argument("--speed", action="store_true", help="run the live-speed finder probes instead")
     a = ap.parse_args()
 
     raw = (a.host or a.ipv6 or "").strip().strip("[]")
@@ -114,7 +127,7 @@ def main():
             "  - the address matches what the app's Connect/Scan shows")
 
     print(f"# Solankizm probe  target={raw}:{PORT}")
-    for label, cmd in PROBES:
+    for label, cmd in (SPEED_PROBES if a.speed else PROBES):
         print(f"\n######## {label}\n$ {cmd}")
         try:
             _, out = run(ch, cmd)

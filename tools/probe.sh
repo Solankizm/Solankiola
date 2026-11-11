@@ -1,16 +1,17 @@
 #!/usr/bin/env bash
 # One-line read-only probe of your Ola S1 head unit.
 #
-#   bash tools/probe.sh 192.168.43.12
+#   bash tools/probe.sh 192.168.43.12            # main probe -> probe-report.txt
+#   bash tools/probe.sh 192.168.43.12 --speed    # live-speed finder -> speed-report.txt
 #
 # Use the SAME IP the Solankizm app's Connect/Scan shows. Your Mac and the
-# scooter must be on the same network (your phone hotspot). Saves the result
-# to probe-report.txt — send me that file.
+# scooter must be on the same network (your phone hotspot). For --speed, turn
+# the scooter ON (motor on) so speed is non-zero if possible. Send me the file.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
 if [ $# -lt 1 ]; then
-  echo "usage: bash tools/probe.sh <scooter-ip>     (e.g. 192.168.43.12)"
+  echo "usage: bash tools/probe.sh <scooter-ip> [--speed]"
   exit 1
 fi
 
@@ -23,6 +24,9 @@ if ! .venv/bin/python -c "import grpc" >/dev/null 2>&1; then
   .venv/bin/pip install -q grpcio
 fi
 
-.venv/bin/python tools/probe.py --host "$1" | tee probe-report.txt
+OUT="probe-report.txt"
+if [ "${2:-}" = "--speed" ]; then OUT="speed-report.txt"; fi
+
+.venv/bin/python tools/probe.py --host "$1" "${@:2}" | tee "$OUT"
 echo
-echo "Saved to: $(pwd)/probe-report.txt  — send me that file."
+echo "Saved to: $(pwd)/$OUT  — send me that file."
