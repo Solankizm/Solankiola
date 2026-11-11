@@ -40,6 +40,8 @@ fun SolankizmApp(vm: DashboardViewModel = viewModel()) {
         val v by vm.vehicle.collectAsStateWithLifecycle()
         val screen by vm.screen.collectAsStateWithLifecycle()
         val connState by vm.conn.collectAsStateWithLifecycle()
+        val discovering by vm.discovering.collectAsStateWithLifecycle()
+        val discovered by vm.discovered.collectAsStateWithLifecycle()
         val accent = v.rideMode.accent
 
         // ---- Rider profile (photo + name), on-device only -----------------
@@ -77,6 +79,10 @@ fun SolankizmApp(vm: DashboardViewModel = viewModel()) {
                         Screen.CONNECT -> ConnectScreen(
                             state = connState,
                             accent = accent,
+                            discovering = discovering,
+                            discovered = discovered,
+                            onScan = { vm.autoDiscover() },
+                            onClearDiscovered = { vm.clearDiscovered() },
                             onConnect = { ip, s -> vm.connect(ip, s) },
                             onRefresh = { vm.refreshInfo() },
                             onDisconnect = { vm.disconnect() },

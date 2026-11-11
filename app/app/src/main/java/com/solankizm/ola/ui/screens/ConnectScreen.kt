@@ -1,5 +1,6 @@
 package com.solankizm.ola.ui.screens
 
+import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -19,13 +20,14 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -37,11 +39,28 @@ import com.solankizm.ola.ui.components.StatCard
 fun ConnectScreen(
     state: ConnectState,
     accent: Color,
+    discovering: Boolean,
+    discovered: String?,
+    onScan: () -> Unit,
+    onClearDiscovered: () -> Unit,
     onConnect: (ip: String, scope: Int?) -> Unit,
     onRefresh: () -> Unit,
     onDisconnect: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val ctx = LocalContext.current
+    val prefs = remember { ctx.getSharedPreferences("solankizm", Context.MODE_PRIVATE) }
+    var ip by remember { mutableStateOf(prefs.getString("lastIp", "") ?: "") }
+    var scope by remember { mutableStateOf(prefs.getString("lastScope", "") ?: "") }
+
+    // When a scan finds the scooter, drop its IP into the field.
+    LaunchedEffect(discovered) {
+        if (!discovered.isNullOrBlank()) {
+            ip = discovered
+            onClearDiscovered()
+        }
+    }
+
     Column(
         modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(28.dp)
     ) {
@@ -53,16 +72,14 @@ fun ConnectScreen(
         )
         Spacer(Modifier.height(6.dp))
         Text(
-            "Join your phone's hotspot on the scooter, then enter the IP shown in " +
-                "Hotspot → Connected Devices. Reads live info over MoveOS port 50005.",
+            "Join your phone's hotspot on the scooter, then tap Scan — or enter the IP " +
+                "from Hotspot → Connected Devices. Reads live info over MoveOS port 50005.",
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontSize = 13.sp,
             lineHeight = 19.sp,
         )
         Spacer(Modifier.height(18.dp))
 
-        var ip by remember { mutableStateOf("") }
-        var scope by remember { mutableStateOf("") }
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             OutlinedTextField(
                 value = ip,
@@ -74,7 +91,7 @@ fun ConnectScreen(
             OutlinedTextField(
                 value = scope,
                 onValueChange = { scope = it },
-                label = { Text("Scope (IPv6 only)") },
+                label = { Text("Scope (IPv6)") },
                 singleLine = true,
                 modifier = Modifier.weight(1f),
             )
@@ -84,20 +101,28 @@ fun ConnectScreen(
         val connecting = state is ConnectState.Connecting
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Button(
-                onClick = { onConnect(ip, scope.toIntOrNull()) },
-                enabled = !connecting,
+                onClick = {
+                    prefs.edit().putString("lastIp", ip.trim()).putString("lastScope", scope.trim()).apply()
+                    onConnect(ip, scope.toIntOrNull())
+                },
+                enabled = !connecting && !discovering,
                 colors = ButtonDefaults.buttonColors(containerColor = accent),
             ) {
                 if (connecting) {
-                    CircularProgressIndicator(
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        strokeWidth = 2.dp,
-                        modifier = Modifier.width(18.dp).height(18.dp),
-                    )
+                    Spinner()
                     Spacer(Modifier.width(10.dp))
                     Text("Connecting…")
                 } else {
                     Text(if (state is ConnectState.Connected) "Reconnect" else "Connect")
+                }
+            }
+            OutlinedButton(onClick = onScan, enabled = !discovering && !connecting) {
+                if (discovering) {
+                    Spinner()
+                    Spacer(Modifier.width(10.dp))
+                    Text("Scanning…")
+                } else {
+                    Text("Scan")
                 }
             }
             if (state is ConnectState.Connected) {
@@ -112,12 +137,23 @@ fun ConnectScreen(
             is ConnectState.Error -> StatusLine("⚠  ${state.message}", Color(0xFFFF8A1F))
             is ConnectState.Connected -> ConnectedInfo(state.info, accent)
             ConnectState.Connecting -> StatusLine("Reaching the scooter…", accent)
-            ConnectState.Idle -> StatusLine(
-                "Not connected. On a phone without this link, the dashboard shows demo data.",
-                MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+            ConnectState.Idle ->
+                if (discovering) StatusLine("Scanning your network for the scooter…", accent)
+                else StatusLine(
+                    "Not connected. On a phone without this link, the dashboard shows demo data.",
+                    MaterialTheme.colorScheme.onSurfaceVariant,
+                )
         }
     }
+}
+
+@Composable
+private fun Spinner() {
+    CircularProgressIndicator(
+        color = MaterialTheme.colorScheme.onPrimary,
+        strokeWidth = 2.dp,
+        modifier = Modifier.width(18.dp).height(18.dp),
+    )
 }
 
 @Composable

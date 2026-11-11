@@ -36,6 +36,11 @@ class DashboardViewModel @JvmOverloads constructor(
     val conn: StateFlow<ConnectState> = _conn.asStateFlow()
     private var client: S1Client? = null
 
+    private val _discovering = MutableStateFlow(false)
+    val discovering: StateFlow<Boolean> = _discovering.asStateFlow()
+    private val _discovered = MutableStateFlow<String?>(null)
+    val discovered: StateFlow<String?> = _discovered.asStateFlow()
+
     val sourceName: String get() = source.name
 
     fun go(screen: Screen) { _screen.value = screen }
@@ -65,6 +70,18 @@ class DashboardViewModel @JvmOverloads constructor(
         val c = client ?: return@launch
         runCatching { _conn.value = ConnectState.Connected(readDeviceInfo(c)) }
     }
+
+    /** Scan the hotspot/Wi-Fi for a scooter answering on port 50005. */
+    fun autoDiscover() = viewModelScope.launch(Dispatchers.IO) {
+        _discovering.value = true
+        _discovered.value = null
+        val ip = com.solankizm.ola.data.net.NetworkScanner.discover()
+        _discovering.value = false
+        if (ip != null) _discovered.value = ip
+        else _conn.value = ConnectState.Error("No scooter found on this network. Make sure it joined your hotspot and the screen is awake, or enter the IP manually.")
+    }
+
+    fun clearDiscovered() { _discovered.value = null }
 
     fun disconnect() {
         client?.close(); client = null
