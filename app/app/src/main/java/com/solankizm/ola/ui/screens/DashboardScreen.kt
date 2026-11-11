@@ -6,9 +6,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -39,85 +41,67 @@ fun DashboardScreen(v: VehicleData, profile: Profile, modifier: Modifier = Modif
     val accent by animateColorAsState(v.rideMode.accent, tween(500), label = "accent")
     val fraction = v.speedKmph.toFloat() / v.rideMode.topSpeed.coerceAtLeast(1)
 
-    Row(modifier.fillMaxSize().padding(24.dp)) {
+    Row(modifier.fillMaxSize().padding(16.dp)) {
         // ---- Left: battery column -----------------------------------------
         Column(
-            Modifier.weight(0.15f).padding(end = 8.dp),
+            Modifier.weight(0.15f).fillMaxHeight().padding(end = 6.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Text(
-                "${v.socPercent}%",
-                color = MaterialTheme.colorScheme.onSurface,
-                fontSize = 26.sp,
-                fontWeight = FontWeight.Bold,
-            )
-            Text(
-                "BATTERY",
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                fontSize = 10.sp,
-                letterSpacing = 1.5.sp,
-            )
-            Spacer(Modifier.height(14.dp))
+            Text("${v.socPercent}%", color = MaterialTheme.colorScheme.onSurface, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+            Text("BATTERY", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 9.sp, letterSpacing = 1.2.sp)
+            Spacer(Modifier.height(10.dp))
             BatteryLeds(
                 bars = v.batteryBars,
                 accent = accent,
                 track = MaterialTheme.colorScheme.outline,
-                modifier = Modifier.width(34.dp).height(260.dp),
+                modifier = Modifier.width(26.dp).weight(1f),
             )
         }
 
-        // ---- Center: speedometer ------------------------------------------
+        // ---- Center: speedometer (sized to fit the screen) ----------------
         Column(
-            Modifier.weight(0.58f),
+            Modifier.weight(0.58f).fillMaxHeight(),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Avatar(profile = profile, accent = accent, size = 40.dp)
-                Spacer(Modifier.width(10.dp))
-                Text(
-                    "Hi, ${profile.name}",
-                    color = MaterialTheme.colorScheme.onSurface,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold,
-                )
+                Avatar(profile = profile, accent = accent, size = 30.dp)
+                Spacer(Modifier.width(8.dp))
+                Text("Hi, ${profile.name}", color = MaterialTheme.colorScheme.onSurface, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
             }
-            Spacer(Modifier.height(10.dp))
+            Spacer(Modifier.height(6.dp))
             DynamicIsland(v, accent)
-            Spacer(Modifier.height(8.dp))
-            Box(contentAlignment = Alignment.Center) {
-                SpeedArc(
-                    fraction = fraction,
-                    accent = accent,
-                    track = MaterialTheme.colorScheme.outline,
-                )
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
-                        "${v.speedKmph}",
-                        color = MaterialTheme.colorScheme.onSurface,
-                        fontSize = 130.sp,
-                        fontWeight = FontWeight.Bold,
+            BoxWithConstraints(
+                Modifier.weight(1f).fillMaxWidth(),
+                contentAlignment = Alignment.Center,
+            ) {
+                val gauge = minOf(maxWidth, maxHeight) * 0.98f
+                val speedSp = (gauge.value * 0.30f).sp
+                Box(contentAlignment = Alignment.Center) {
+                    SpeedArc(
+                        fraction = fraction,
+                        accent = accent,
+                        track = MaterialTheme.colorScheme.outline,
+                        size = gauge,
+                        stroke = (gauge.value * 0.05f).dp,
                     )
-                    Text(
-                        "km/h",
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Medium,
-                    )
-                    Spacer(Modifier.height(10.dp))
-                    RideModePill(v, accent)
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("${v.speedKmph}", color = MaterialTheme.colorScheme.onSurface, fontSize = speedSp, fontWeight = FontWeight.Bold)
+                        Text("km/h", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp, fontWeight = FontWeight.Medium)
+                        Spacer(Modifier.height(6.dp))
+                        RideModePill(v, accent)
+                    }
                 }
             }
         }
 
         // ---- Right: live stat stack ---------------------------------------
         Column(
-            Modifier.weight(0.27f).padding(start = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp),
+            Modifier.weight(0.27f).fillMaxHeight().padding(start = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically),
         ) {
             StatCard("Range", "${v.rangeKm}", "km", accent, Modifier.fillMaxWidth())
             StatCard("Trip", "%.1f".format(v.tripKm), "km", accent, Modifier.fillMaxWidth())
             StatCard("Odometer", "${v.odometerKm}", "km", accent, Modifier.fillMaxWidth())
-            StatCard("Motor", "${v.motorTempC}", "°C", accent, Modifier.fillMaxWidth())
         }
     }
 }
@@ -128,26 +112,17 @@ private fun RideModePill(v: VehicleData, accent: Color) {
         Modifier
             .background(accent.copy(alpha = 0.14f), RoundedCornerShape(50))
             .border(1.dp, accent.copy(alpha = 0.5f), RoundedCornerShape(50))
-            .padding(horizontal = 22.dp, vertical = 9.dp),
+            .padding(horizontal = 16.dp, vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Box(Modifier.size(9.dp).background(accent, RoundedCornerShape(50)))
-        Spacer(Modifier.width(10.dp))
+        Box(Modifier.size(8.dp).background(accent, RoundedCornerShape(50)))
+        Spacer(Modifier.width(8.dp))
+        Text(v.rideMode.label, color = accent, fontSize = 13.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.5.sp)
         Text(
-            v.rideMode.label,
-            color = accent,
-            fontSize = 16.sp,
-            fontWeight = FontWeight.Bold,
-            letterSpacing = 2.sp,
+            if (v.demo) "  · DEMO" else "  · LIVE",
+            color = if (v.demo) MaterialTheme.colorScheme.onSurfaceVariant else Color(0xFF2ED47A),
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Medium,
         )
-        if (v.demo) {
-            Spacer(Modifier.width(10.dp))
-            Text(
-                "· DEMO",
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Medium,
-            )
-        }
     }
 }

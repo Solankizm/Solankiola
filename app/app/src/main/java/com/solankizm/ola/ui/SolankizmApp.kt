@@ -39,7 +39,9 @@ import com.solankizm.ola.vm.Screen
 fun SolankizmApp(vm: DashboardViewModel = viewModel()) {
     val dark by vm.dark.collectAsStateWithLifecycle()
     SolankizmTheme(dark = dark) {
-        val v by vm.vehicle.collectAsStateWithLifecycle()
+        val demoV by vm.vehicle.collectAsStateWithLifecycle()
+        val liveV by vm.live.collectAsStateWithLifecycle()
+        val v = liveV ?: demoV
         val screen by vm.screen.collectAsStateWithLifecycle()
         val connState by vm.conn.collectAsStateWithLifecycle()
         val discovering by vm.discovering.collectAsStateWithLifecycle()
