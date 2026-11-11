@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material3.Button
@@ -46,7 +48,7 @@ private fun Header(title: String) {
 
 @Composable
 fun TripScreen(v: VehicleData, accent: Color, modifier: Modifier = Modifier) {
-    Column(modifier.fillMaxSize().padding(28.dp)) {
+    Column(modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(28.dp)) {
         Header("Trip")
         Spacer(Modifier.height(20.dp))
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(14.dp)) {
@@ -67,7 +69,7 @@ fun TripScreen(v: VehicleData, accent: Color, modifier: Modifier = Modifier) {
 
 @Composable
 fun ChargingScreen(v: VehicleData, accent: Color, modifier: Modifier = Modifier) {
-    Column(modifier.fillMaxSize().padding(28.dp)) {
+    Column(modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(28.dp)) {
         Header("Charging")
         Spacer(Modifier.height(20.dp))
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(14.dp)) {
@@ -82,7 +84,7 @@ fun ChargingScreen(v: VehicleData, accent: Color, modifier: Modifier = Modifier)
 
 @Composable
 fun RangeScreen(v: VehicleData, accent: Color, modifier: Modifier = Modifier) {
-    Column(modifier.fillMaxSize().padding(28.dp)) {
+    Column(modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(28.dp)) {
         Header("Range planner")
         Spacer(Modifier.height(20.dp))
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(14.dp)) {
@@ -106,7 +108,7 @@ fun SettingsScreen(
     onPickPhoto: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Column(modifier.fillMaxSize().padding(28.dp)) {
+    Column(modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(28.dp)) {
         Header("Settings")
         Spacer(Modifier.height(20.dp))
 

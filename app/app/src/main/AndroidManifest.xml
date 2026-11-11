@@ -15,7 +15,7 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:screenOrientation="landscape"
+            android:screenOrientation="fullUser"
             android:configChanges="orientation|screenSize|keyboardHidden|density|screenLayout"
             android:theme="@style/Theme.Solankizm">
             <intent-filter>
