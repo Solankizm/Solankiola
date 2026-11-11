@@ -19,3 +19,6 @@ reference/
 
 # probe output (may contain scooter identifiers)
 probe-report.txt
+
+# python venv for the probe tool
+.venv/
