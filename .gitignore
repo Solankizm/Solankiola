@@ -1,0 +1,21 @@
+# build outputs
+app/.gradle/
+app/build/
+app/app/build/
+**/build/
+.gradle/
+
+# local machine config (never commit — has absolute SDK path)
+app/local.properties
+.env.sh
+
+# IDE / OS
+.idea/
+*.iml
+.DS_Store
+
+# downloaded reference clone (study only, not ours to redistribute)
+reference/
+
+# probe output (may contain scooter identifiers)
+probe-report.txt

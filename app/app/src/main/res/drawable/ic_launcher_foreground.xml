@@ -1,0 +1,19 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Stylised "S" speed mark, Solankizm green -->
+    <path
+        android:pathData="M68,38 C68,33 63,30 54,30 C44,30 39,35 39,42 C39,56 68,52 68,66 C68,73 62,78 52,78 C43,78 38,74 38,69"
+        android:strokeColor="#2ED47A"
+        android:strokeWidth="7"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000" />
+    <path
+        android:pathData="M30,82 L78,82"
+        android:strokeColor="#3B9CFF"
+        android:strokeWidth="4"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000" />
+</vector>
