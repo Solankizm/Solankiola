@@ -42,7 +42,7 @@ fun DashboardScreen(v: VehicleData, profile: Profile, modifier: Modifier = Modif
     Row(modifier.fillMaxSize().padding(24.dp)) {
         // ---- Left: battery column -----------------------------------------
         Column(
-            Modifier.fillMaxWidth(0.12f).padding(end = 8.dp),
+            Modifier.weight(0.15f).padding(end = 8.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text(
@@ -68,7 +68,7 @@ fun DashboardScreen(v: VehicleData, profile: Profile, modifier: Modifier = Modif
 
         // ---- Center: speedometer ------------------------------------------
         Column(
-            Modifier.fillMaxWidth(0.62f),
+            Modifier.weight(0.58f),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -111,7 +111,7 @@ fun DashboardScreen(v: VehicleData, profile: Profile, modifier: Modifier = Modif
 
         // ---- Right: live stat stack ---------------------------------------
         Column(
-            Modifier.fillMaxWidth().padding(start = 12.dp),
+            Modifier.weight(0.27f).padding(start = 12.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
             StatCard("Range", "${v.rangeKm}", "km", accent, Modifier.fillMaxWidth())
