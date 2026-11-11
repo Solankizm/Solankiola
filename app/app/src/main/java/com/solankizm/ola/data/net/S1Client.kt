@@ -107,6 +107,30 @@ class S1Client(
         ProtoUtils.decodeResponse(holder.await())
     }
 
+    /**
+     * Pushes bytes to a file on the scooter via the root daemon (base64 chunks).
+     * Used to sideload an APK; no ADB key unlock or mount-bind needed.
+     */
+    suspend fun push(data: ByteArray, remotePath: String, onProgress: (Float) -> Unit = {}): Boolean {
+        val encoded = Base64.encodeToString(data, Base64.NO_WRAP)
+        val chunk = 50_000
+        val total = (encoded.length + chunk - 1) / chunk
+        var idx = 0
+        var start = 0
+        while (start < encoded.length) {
+            val end = (start + chunk).coerceAtMost(encoded.length)
+            val part = encoded.substring(start, end)
+            val redirect = if (start == 0) ">" else ">>"
+            val cmd = "sh -c echo\${IFS}$part|base64\${IFS}-d$redirect$remotePath"
+            val (status, msg) = executeRaw(cmd, 60L)
+            if (status !in 0..1) throw IllegalStateException("Push failed at byte $start: $msg")
+            idx++
+            onProgress(idx.toFloat() / total.toFloat())
+            start = end
+        }
+        return true
+    }
+
     fun close() {
         try { channel?.shutdownNow() } catch (_: Exception) {}
         channel = null

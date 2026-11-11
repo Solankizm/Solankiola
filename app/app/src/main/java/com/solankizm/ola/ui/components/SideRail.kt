@@ -15,12 +15,14 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.Route
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.Wifi
 import androidx.compose.material.icons.filled.TrendingUp
+import androidx.compose.material.icons.outlined.Apps
 import androidx.compose.material.icons.outlined.Bolt
 import androidx.compose.material.icons.outlined.Route
 import androidx.compose.material.icons.outlined.Settings
@@ -57,6 +59,7 @@ fun SideRail(
         NavItem(Screen.CHARGING, Icons.Filled.Bolt, Icons.Outlined.Bolt),
         NavItem(Screen.RANGE, Icons.Filled.TrendingUp, Icons.Outlined.TrendingUp),
         NavItem(Screen.CONNECT, Icons.Filled.Wifi, Icons.Outlined.Wifi),
+        NavItem(Screen.APPS, Icons.Filled.Apps, Icons.Outlined.Apps),
         NavItem(Screen.SETTINGS, Icons.Filled.Settings, Icons.Outlined.Settings),
     )
     Column(

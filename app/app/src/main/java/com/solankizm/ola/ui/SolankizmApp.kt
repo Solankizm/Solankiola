@@ -24,6 +24,8 @@ import com.solankizm.ola.data.Profile
 import com.solankizm.ola.data.ProfileStore
 import com.solankizm.ola.ui.components.SideRail
 import com.solankizm.ola.ui.screens.ChargingScreen
+import com.solankizm.ola.data.net.ConnectState
+import com.solankizm.ola.ui.screens.AppsScreen
 import com.solankizm.ola.ui.screens.ConnectScreen
 import com.solankizm.ola.ui.screens.DashboardScreen
 import com.solankizm.ola.ui.screens.RangeScreen
@@ -42,6 +44,8 @@ fun SolankizmApp(vm: DashboardViewModel = viewModel()) {
         val connState by vm.conn.collectAsStateWithLifecycle()
         val discovering by vm.discovering.collectAsStateWithLifecycle()
         val discovered by vm.discovered.collectAsStateWithLifecycle()
+        val installed by vm.installed.collectAsStateWithLifecycle()
+        val appProgress by vm.appProgress.collectAsStateWithLifecycle()
         val accent = v.rideMode.accent
 
         // ---- Rider profile (photo + name), on-device only -----------------
@@ -57,6 +61,10 @@ fun SolankizmApp(vm: DashboardViewModel = viewModel()) {
                 profile = profile.copy(photo = bmp)
             }
         }
+
+        val apkPicker = rememberLauncherForActivityResult(
+            ActivityResultContracts.GetContent()
+        ) { uri -> if (uri != null) vm.installLocalApk(context, uri) }
 
         Box(
             Modifier
@@ -86,6 +94,16 @@ fun SolankizmApp(vm: DashboardViewModel = viewModel()) {
                             onConnect = { ip, s -> vm.connect(ip, s) },
                             onRefresh = { vm.refreshInfo() },
                             onDisconnect = { vm.disconnect() },
+                        )
+                        Screen.APPS -> AppsScreen(
+                            linked = connState is ConnectState.Connected,
+                            installed = installed,
+                            progress = appProgress,
+                            accent = accent,
+                            onInstall = { vm.installCatalog(context, it) },
+                            onLaunch = { vm.launchPkg(it) },
+                            onUninstall = { vm.uninstallPkg(it) },
+                            onPickApk = { apkPicker.launch("application/vnd.android.package-archive") },
                         )
                         Screen.SETTINGS -> SettingsScreen(
                             sourceName = vm.sourceName,
