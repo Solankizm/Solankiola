@@ -19,11 +19,13 @@ import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.Route
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Speed
+import androidx.compose.material.icons.filled.Wifi
 import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material.icons.outlined.Bolt
 import androidx.compose.material.icons.outlined.Route
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Speed
+import androidx.compose.material.icons.outlined.Wifi
 import androidx.compose.material.icons.outlined.TrendingUp
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -54,6 +56,7 @@ fun SideRail(
         NavItem(Screen.TRIP, Icons.Filled.Route, Icons.Outlined.Route),
         NavItem(Screen.CHARGING, Icons.Filled.Bolt, Icons.Outlined.Bolt),
         NavItem(Screen.RANGE, Icons.Filled.TrendingUp, Icons.Outlined.TrendingUp),
+        NavItem(Screen.CONNECT, Icons.Filled.Wifi, Icons.Outlined.Wifi),
         NavItem(Screen.SETTINGS, Icons.Filled.Settings, Icons.Outlined.Settings),
     )
     Column(

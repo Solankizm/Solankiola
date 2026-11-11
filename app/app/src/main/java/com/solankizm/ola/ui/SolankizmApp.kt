@@ -24,6 +24,7 @@ import com.solankizm.ola.data.Profile
 import com.solankizm.ola.data.ProfileStore
 import com.solankizm.ola.ui.components.SideRail
 import com.solankizm.ola.ui.screens.ChargingScreen
+import com.solankizm.ola.ui.screens.ConnectScreen
 import com.solankizm.ola.ui.screens.DashboardScreen
 import com.solankizm.ola.ui.screens.RangeScreen
 import com.solankizm.ola.ui.screens.SettingsScreen
@@ -38,6 +39,7 @@ fun SolankizmApp(vm: DashboardViewModel = viewModel()) {
     SolankizmTheme(dark = dark) {
         val v by vm.vehicle.collectAsStateWithLifecycle()
         val screen by vm.screen.collectAsStateWithLifecycle()
+        val connState by vm.conn.collectAsStateWithLifecycle()
         val accent = v.rideMode.accent
 
         // ---- Rider profile (photo + name), on-device only -----------------
@@ -72,6 +74,13 @@ fun SolankizmApp(vm: DashboardViewModel = viewModel()) {
                         Screen.TRIP -> TripScreen(v, accent)
                         Screen.CHARGING -> ChargingScreen(v, accent)
                         Screen.RANGE -> RangeScreen(v, accent)
+                        Screen.CONNECT -> ConnectScreen(
+                            state = connState,
+                            accent = accent,
+                            onConnect = { ip, s -> vm.connect(ip, s) },
+                            onRefresh = { vm.refreshInfo() },
+                            onDisconnect = { vm.disconnect() },
+                        )
                         Screen.SETTINGS -> SettingsScreen(
                             sourceName = vm.sourceName,
                             dark = dark,

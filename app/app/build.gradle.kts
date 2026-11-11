@@ -35,6 +35,17 @@ android {
     buildFeatures {
         compose = true
     }
+    packaging {
+        resources {
+            excludes += setOf(
+                "META-INF/INDEX.LIST",
+                "META-INF/DEPENDENCIES",
+                "META-INF/io.netty.versions.properties",
+                "META-INF/AL2.0",
+                "META-INF/LGPL2.1",
+            )
+        }
+    }
 }
 
 dependencies {
@@ -57,6 +68,10 @@ dependencies {
     implementation("androidx.compose.material:material-icons-extended")
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.1")
+
+    // Phone -> scooter live link (MoveOS root diagnostics, TCP 50005).
+    implementation("io.grpc:grpc-okhttp:1.68.2")
+    implementation("io.grpc:grpc-stub:1.68.2")
 
     debugImplementation("androidx.compose.ui:ui-tooling")
 }
