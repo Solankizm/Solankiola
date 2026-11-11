@@ -5,10 +5,12 @@ Finds where live vehicle data (speed, SOC, range, ride mode) lives, so the
 Solankizm app can read it. It runs ONLY the fixed, read-only commands below.
 There is no free-text shell and it never writes, mounts, setprops or installs.
 
-    pip install grpcio
-    python tools/probe.py --ipv6 fe80::xxxx:xxxx:xxxx:xxxx%<scope>  > probe-report.txt
+    python3 -m pip install grpcio
+    python3 tools/probe.py --host 192.168.43.12 > probe-report.txt
+    # (IPv6 link-local also works:  --ipv6 fe80::xxxx%<scope>)
 
-Only run this on YOUR scooter, joined to YOUR phone hotspot.
+Use the SAME address the app's Connect/Scan shows. Your Mac and the scooter
+must be on the same network (your phone hotspot). Only run this on YOUR scooter.
 """
 import argparse
 import base64
@@ -17,7 +19,7 @@ import sys
 try:
     import grpc
 except ImportError:
-    sys.exit("Missing grpcio:  python -m pip install grpcio")
+    sys.exit("Missing grpcio:  python3 -m pip install grpcio")
 
 PORT = 50005
 
@@ -85,13 +87,33 @@ def run(channel, cmd):
 
 
 def main():
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--ipv6", required=True, help="e.g. fe80::1%%6")
+    ap = argparse.ArgumentParser(
+        description="Read-only probe of an Ola S1 head unit (MoveOS port 50005).")
+    ap.add_argument("--host", help="scooter IP, e.g. 192.168.43.12  (same one the app's Scan finds)")
+    ap.add_argument("--ipv6", help="IPv6 link-local form, e.g. fe80::1%%6  (use --host for normal IPv4)")
     a = ap.parse_args()
-    h = a.ipv6.strip("[]").replace("%", "%25")
-    ch = grpc.insecure_channel(f"ipv6:[{h}]:{PORT}",
-                               options=[("grpc.max_receive_message_length", 16 << 20)])
-    grpc.channel_ready_future(ch).result(timeout=8)
+
+    raw = (a.host or a.ipv6 or "").strip().strip("[]")
+    if not raw:
+        raise SystemExit("Give the scooter address:  --host 192.168.43.12")
+
+    if raw.count(":") >= 2:                         # IPv6
+        target = f"ipv6:[{raw.replace('%', '%25')}]:{PORT}"
+    else:                                           # IPv4 or hostname
+        target = f"{raw}:{PORT}"
+
+    ch = grpc.insecure_channel(
+        target, options=[("grpc.max_receive_message_length", 16 << 20)])
+    try:
+        grpc.channel_ready_future(ch).result(timeout=8)
+    except grpc.FutureTimeoutError:
+        raise SystemExit(
+            f"No answer from {raw}:{PORT}. Check:\n"
+            "  - the Mac and the scooter are on the SAME network (your phone hotspot)\n"
+            "  - the scooter screen is awake, side stand up\n"
+            "  - the address matches what the app's Connect/Scan shows")
+
+    print(f"# Solankizm probe  target={raw}:{PORT}")
     for label, cmd in PROBES:
         print(f"\n######## {label}\n$ {cmd}")
         try:
