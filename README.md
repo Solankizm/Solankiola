@@ -1,67 +1,63 @@
 # Solankizm — a custom dashboard for Ola S1 / S1 Pro
 
-An independent, **read-only** infotainment dashboard for the MoveOS head unit.
-Kotlin + Jetpack Compose. Clean Ola-style UI, ride-mode accent colours, a live
-speedometer, battery, range, trip and charging screens.
+An independent, **read-only** dashboard for the MoveOS head unit, with a
+**Phone Connect** mode so you can also read your scooter live from an Android
+phone. Kotlin + Jetpack Compose. Ride-mode accent colours, a live speedometer,
+battery, range, trip and charging screens, and a rider display picture.
 
 > Independent project, **not affiliated with Ola Electric**. "Ola" is a
 > trademark of its owner. For personal use on your own scooter.
 
 ## What it is (and isn't)
-- **Is:** an ordinary Android app you install once over ADB. It reads vehicle
-  data and shows it nicely. No root needed at runtime.
+- **Is:** an Android app. Run it on the scooter's own screen (installed over
+  ADB), or on your phone and **connect to the scooter over Wi-Fi** to read real
+  device info.
 - **Isn't:** a vehicle controller. It never locks/unlocks, never changes speed
-  limit, battery, regen or firmware, never spends money, never posts anything.
-  See `docs/REVERSE-ENGINEERING.md` for why that line matters.
+  limit, battery, regen or firmware, never spends money. See
+  `docs/REVERSE-ENGINEERING.md` for why that line matters.
 
-## Folder map
-```
-app/                  the Android app (Gradle project)
-  app/src/main/...     Kotlin source — UI, data, viewmodel
-  build.sh             build the APK
-  install.sh           push it to the scooter over ADB
-tools/probe.py         READ-ONLY probe to find where live data lives on MoveOS
-reference/s1mods/      the original S1Mods v1.3 source, for study only
-docs/REVERSE-ENGINEERING.md   teardown + safety findings
-preview/index.html     static UI mockup you can open in any browser
-.env.sh                sets JAVA_HOME / ANDROID_HOME for this machine
-```
+## Get the app
+- **Download the APK:** GitHub → **Actions** tab → latest green run → **Artifacts
+  → Solankizm-apk** (unzip for `Solankizm.apk`). Or, once a `v*` tag is pushed,
+  from the **Releases** page.
+- **Build locally:** `cd app && ./build.sh` → `app/build/outputs/apk/debug/app-debug.apk`
 
-## Build
-Toolchain is already installed on this Mac (JDK 21, Android SDK 34, build-tools).
-```
-cd app && ./build.sh
-# -> app/build/outputs/apk/debug/app-debug.apk
-```
+## Two ways to use it
+### A. Phone Connect (easiest to try)
+1. Turn on your phone **hotspot**; on the scooter, **Settings → Wi-Fi → join it**.
+   Keep the scooter screen awake, side stand UP.
+2. Open Solankizm on your phone → **Connect** tab (Wi-Fi icon) → **Scan**
+   (or type the scooter IP from Hotspot → Connected Devices) → **Connect**.
+3. You'll see real live info: **Model, MoveOS, Android, RAM, Uptime**.
+   *(Live speed / battery / range come after the probe step below.)*
 
-## Run without a scooter
-The app ships with a **Demo** data source that simulates a ride, so the whole UI
-works on an emulator or any Android device. Live data turns on once the MoveOS
-source is wired (step below).
+### B. Install on the scooter screen
+1. Scooter on your hotspot; authorise ADB once (via S1Mods, or `adb connect <ip>:5555`).
+2. `cd app && ./install.sh <scooter-ip>` → open **Solankizm** from the scooter app drawer.
 
-## Put it on the scooter
-1. Connect the scooter to **your own phone hotspot** (never public Wi-Fi — see safety note).
-2. Authorise ADB once (via S1Mods, or `adb connect <scooter-ip>:5555`).
-3. `cd app && ./install.sh <scooter-ip>`
+## Your display picture
+Settings → **Add photo** (system picker), or push from the Mac:
+`app/set-photo.sh <scooter-ip> ~/your-photo.jpg`.
 
 ## Wire real telemetry (needs the scooter once)
-Run the read-only probe and send me the output:
+Live speed, state-of-charge and range aren't shown yet because their exact
+source on MoveOS must be confirmed. Run the **read-only** probe and share the
+output:
 ```
 pip install grpcio
-python tools/probe.py --ipv6 <scooter-ipv6>%<scope> > probe-report.txt
+python3 tools/probe.py --ipv6 <scooter-ipv6>%<scope> > probe-report.txt
 ```
-It only reads — no writes, no shell, no installs. The report shows where speed,
-SOC, range and ride mode live; then `MoveOsVehicleSource.kt` gets filled in.
+It only reads — no writes, no installs. The report locates speed/SOC/range;
+then `MoveOsVehicleSource.kt` + the Connect screen get the live numbers.
 
 ## Safety note (important)
 Your scooter runs an **unauthenticated root service on port 50005** on any Wi-Fi
 it joins — that's Ola's flaw, not this app's. Anyone on the same network can run
-root commands. Only ever connect the scooter to a network you control. Worth
-reporting to Ola.
+root commands. Only ever connect the scooter to a network you control.
 
 ## Status
-- [x] Toolchain installed, project scaffolded, UI built, Demo mode
-- [ ] Build APK (needs your OK to run Gradle — it downloads AGP)
-- [ ] `probe-report.txt` from your scooter
-- [ ] Real telemetry wired into `MoveOsVehicleSource`
-- [ ] Test on your S1 Pro
+- [x] UI, Demo mode, rider photo
+- [x] CI builds the APK on every push (GitHub Actions)
+- [x] **Phone Connect mode** — gRPC link, live device info, Scan + remembered IP
+- [ ] `probe-report.txt` from the scooter → live speed / battery / range
+- [ ] Tag a release (`git push origin v0.1.0`) for a Releases download page
